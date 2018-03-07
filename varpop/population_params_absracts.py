@@ -25,12 +25,18 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
 
     .. note : this is a general enough class to deal with any population. 
     """
+    @abc.abstractproperty
+    def mjdmin(self):
+        pass
+
+    @abstractproperty
+    def mjdmax(self):
+        pass
 
     @abc.abstractproperty
     def paramsTable(self):
         pass
     
-    @abc.abstractmethod
     def modelParams(self, idx):
         """
         Ordered dictionary of model parameter names and parameters for the
