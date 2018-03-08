@@ -146,38 +146,3 @@ class BaseRateDistributions(with_metaclass(abc.ABCMeta, object)):
         each redhift bin, so they should be chosen to be narrow.
         """
         pass
-
-
-class BaseParamDistribution(with_metaclass(abc.ABCMeta, object)):
-    """
-    Class to represent parameters for the model of variables. While this class
-    is expected to be used with random distributons, such that the variable
-    value is a set of random samples from the distribution, this is not forced
-    on the user. It is possible to return `varParams` as a dataFrame containing
-    model parameters from a known list.
-
-
-    Attributes
-    ----------
-    varParams : `pd.DataFrame`
-        a dataframe with the names and values of each model parameter required
-        to specify the model. Provided these parameters, there should be code
-        that uniquely specifies the band flux for this object at any point of
-        time.
-
-    """
-    @abc.abstractproperty
-    def randomState(self):
-        pass
-
-    @abc.abstractmethod
-    def get_randomState(self):
-        pass
-
-    @abc.abstractproperty
-    def set_randomState(self):
-        pass
-
-    @abc.abstractproperty
-    def var_params(self):
-        pass
