@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import os
 from .version import __VERSION__ as __version__
 from .population_params_absracts import *
+from .rateDistributions import *
 
 
 here = __file__

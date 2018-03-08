@@ -9,6 +9,7 @@ __all__ = ['BaseRateDistributions', 'BaseParamDistribution', 'BasePopulation',
 from future.utils import with_metaclass
 import abc
 import numpy as np
+from collections import OrderedDict
 
 class BasePopulation(with_metaclass(abc.ABCMeta, object)):
     """
@@ -29,7 +30,7 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
     def mjdmin(self):
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def mjdmax(self):
         pass
 
