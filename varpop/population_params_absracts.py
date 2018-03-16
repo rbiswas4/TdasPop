@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, division
 A module with the abstract classes for implementing populaions of variables and
 transients.
 """
-__all__ = ['BaseRateDistributions', 'BaseParamDistribution', 'BasePopulation',
+__all__ = ['BaseRateDistributions', 'BasePopulation',
            'BaseSpatialPopulation']
 
 from future.utils import with_metaclass
