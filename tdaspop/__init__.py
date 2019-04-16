@@ -3,6 +3,7 @@ import os
 from .version import __VERSION__ as __version__
 from .population_params_absracts import *
 from .rateDistributions import *
+from .samplingGalaxies import *
 
 
 here = __file__
