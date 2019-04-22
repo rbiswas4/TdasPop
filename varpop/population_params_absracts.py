@@ -122,24 +122,36 @@ class BaseRateDistributions(with_metaclass(abc.ABCMeta, object)):
         pass
 
     @abc.abstractproperty
-    def skyFraction(self):
+    def sky_fraction(self):
         """
-        The sky fraction required for this. This is related to the fieldArea.
+        The sky fraction required for this. This is related to the `sky_area`.
         """
         pass
 
-    @abc.abstractmethod
-    def zSampleSize(self):
+    abc.abstractproperty
+    def sky_area(self):
+        """ The area of the sky in sq degrees over which the sample is studies"""
+
+    @abc.abstractproperty
+    def z_sample_sizes(self):
         """
         Given a collection of edges of redshift bins, and a skyFraction
-        return a collection of expected (possibly non-integral) numbers of SN.
-        Since this is an expected number, the number is a float and it is
-        perfectly fine to get 3.45 SN in a redshift bin.
+        return a collection of expected (possibly non-integral) numbers of
+        TDO. Since this is an expected number, the number is a float and it is
+        perfectly fine to get 3.45 TODs in a redshift bin.
+        """
+        pass
+
+
+    @abc.abstractproperty
+    def num_sources_realized(self):
+        """ A Poisson realization of the number of sources in each redshift bin
+        with expected values given by `z_sample_sizes`.
         """
         pass
 
     @abc.abstractproperty
-    def zSamples(self):
+    def z_samples(self):
         """
         Actual samples of redshift according to the distribution implied. The
         approximation applied is that the redshifts are uniformly sampled on
