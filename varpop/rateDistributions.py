@@ -9,9 +9,55 @@ from . import BaseRateDistributions
 
 class PowerLawRates(BaseRateDistributions):
     """
-    This class is a concrete implementation of `RateDistributions` with the
-    following properties:
-    - The var rate : The variable rate is a single power law with numerical
+    Concrete implementation of `RateDistributions` providing rates and TDO
+    numbers and samples as a function of redshift when the volumetric rate can
+    be expressed as a power law in redshift. This is instantiated by the following
+    parameters and has the attributes and methods listed
+
+
+    Parameters
+    ----------
+    rng : `np.random.RandomState`
+        random state needed for generation
+    cosmo : `astropy.cosmology` instance, defaults to Planck15
+        Cosmology used in the calculation of volumes etc. 
+    alpha_rate :`np.float` defaults to 2.6e-5
+    beta_rate : `np.float` defaults to 1.5
+    zbin_edges : sequence of floats, defaults to `None`
+        Available method of having non-uniform redshift bins by specifying
+        the edgees of the bins. To specify `n` bins, this sequence must have a
+        length of `n + 1`. Has higher preference compared to setting values for
+        `zlower`, `zhigher` and `numBins` which necessarily require uniformly
+        spaced bin, and must be set to `None` for other methods to be used.
+    zlower : `np.float`, defaults to 1.0e-8 
+        Lower end of the redshift distribution, which is used in one of the
+        available methods to set the redshift bins. Must be used in concert
+        with `zhigher`, and `numBins` with `zbin_edges` set to `None` for this
+        to work.
+    zhigher : `np.float`, defaults to 1.4,
+        Higher end of the redshift distribution, which is used in one of the
+        available methods to set the redshift bins. Must be used in concert
+        with `zlower`, and `numBins` with `zbin_edges` set to `None` for this
+        to work.
+    num_bins : `int`, defaults to 28,
+        number of bins, assuming uniform redshift bins as one of the variables
+        for use in setting the redshift bins. Must be used in concert
+        with `zlower`, and `zhigher` with `zbin_edges` set to `None` for this
+        to work.
+    survey_duration :`np.float`, unit of years, defaults to 10.0
+        number of years of survey
+    sky_area : `np.float`, unit of sq deg,  defaults to 10.0 
+        Used if `skyFraction` is set to `None`. The area of the sky over which
+        the samples are calculated. Exactly one of `sky_area` and `skyFraction`
+        must be provided.
+    sky_fraction : `np.float`, defaults to `None`
+        if not `None` the fraction of the sky over which samples are studied.
+        if `None`, this is set by `sky_area`. Exactly one of `sky_area` and
+        `skyFraction` must be provided.
+
+    Attributes
+    ----------
+    - rate: The variable rate is a single power law with numerical
         coefficients (alpha, beta)  passed into the instantiation. The rate is
         the number of variables at redshift z per comoving volume per unit
         observer time over the entire sky expressed in units of 
@@ -31,52 +77,35 @@ class PowerLawRates(BaseRateDistributions):
         This number must be integral.
 
     """
-
     def __init__(self,
                  rng,
                  cosmo=Planck15,
-                 alpha=2.6e-5, beta=1.5,
-                 zbinEdges=None,
+                 alpha_rate=2.6e-5,
+                 beta_rate=1.5,
+                 zbin_edges=None,
                  zlower=1.0e-8,
                  zhigher=1.4,
-                 numBins=20,
-                 surveyDuration=10., # Unit of  years
-                 fieldArea=None, # Unit of degree square
-                 skyFraction=None):
+                 num_bins=20,
+                 survey_duration=10.,
+                 sky_area=10.0, # Unit of degree square
+                 sky_fraction=None):
         """
-        Parameters
-        ----------
-        rng : instance of `np.random.RandomState`
-        cosmo : Instance of `astropy.cosmology` class, optional, defaults to Planck15
-            data structure specifying the cosmological parameters 
-        alpha : float, optional, defaults to 2.6e-5
-            constant amplitude in SN rate powerlaw
-        beta : float, optional, defaults to 1.5
-            constant exponent in SN rate powerlaw
-        surveyDuration : float, units of years, defaults to 10.
-            duration of the survey in units of years
-        fieldArea : float, units of degree sq, defaults to None
-            area of the field over which supernovae are being simulated in
-            units of square degrees. Overridden by `SkyFraction`
-        skyFraction : float, optional, defaults to None
-            Alternative way of specifying fieldArea by supplying the unitless
-            ratio between sky area where the supernovae are being simulated and
-            accepting the default `None` for `fieldArea`. Overrides `fieldArea`
+        Basic constructor for class. Parameters are in the class definition.
         """
         self._rng = rng
-        self.cosmo = cosmo
-        self.alpha = alpha
-        self.beta = beta
-        self.zlower = zlower
-        self.zhigher = zhigher
-        self.numBins = numBins
-        self._zbinEdges = zbinEdges
-        self.DeltaT = surveyDuration
-        self.fieldArea = fieldArea
-        self._skyFraction = skyFraction
-        # not input
-        self._numSN = None
-        self._zSamples = None
+        self._cosmo = cosmo
+        self.alpha_rate = alpha_rate
+        self.beta_rate = beta_rate
+        self.DeltaT = survey_duration
+        self._zsamples = None
+
+        # Set the zbins depending on which parameters were provided
+        self._set_zbins(zbin_edges, zlower, zhigher, num_bins)
+
+        # Set the sky fraction depending on which parameters were provided
+        self._set_skyfraction(sky_area, sky_fraction)
+        self._num_sources = None
+        _ = self.num_sources_realized
 
     @property
     def randomState(self):
@@ -86,37 +115,57 @@ class PowerLawRates(BaseRateDistributions):
 
     @property
     def cosmology(self):
-        return self.cosmo
+        return self._cosmo
+
+    def _set_skyfraction(self, sky_area, sky_fraction):
+        """
+        Private helper function to handle the sky_area and sky_fraction
+        """
+        assert not bool(sky_fraction and sky_area), "Both `sky_fraction` and `sky_area` cannot be specified" 
+        assert bool(sky_fraction or sky_area), "At least one of `sky_fraction` and `sky_area` have to be specified"
+        if sky_fraction is None:
+            self._sky_area = sky_area
+            self._sky_fraction = self.sky_area * np.radians(1.)**2.0  / 4.0 / np.pi
+
+        if sky_area is None:
+            self._sky_fraction = sky_fraction 
+            self._sky_area = self.sky_fraction / (np.radians(1.)**2.0  / 4.0 / np.pi)
+
+        return None
 
     @property
-    def skyFraction(self):
+    def sky_fraction(self):
+        return self._sky_fraction
+
+    @property
+    def sky_area(self):
         """
         fraction of the sky
         """
-        if self._skyFraction is None:
-            if self.fieldArea is None:
-                raise ValueError('Of fieldArea, skyFraction one must be supplied')
-            self._skyFraction = self.fieldArea * np.radians(1.)**2.0  / 4.0 / np.pi
-        elif self.fieldArea is not None:
-            raise ValueError('Both fieldArea and skyFraction are supplied')
-        return self._skyFraction
+        return self._sky_area
 
+    def _set_zbins(self, zbin_edges, zlower, zhigher, num_bins):
+        """
+        """
+        if zbin_edges is None:
+            zbin_edges = np.linspace(zlower, zhigher, num_bins)
+
+        assert len(zbin_edges) > 0
+        
+        self.zlower = zbin_edges.min()
+        self.zhigher = zbin_edges.max()
+        self.num_bins = len(zbin_edges) - 1
+        self._zbin_edges = zbin_edges
+        return None
 
     @property
-    def zbinEdges(self):
-        if self._zbinEdges is None:
-            if any(x is None for x in (self.zlower, self.zhigher, self.numBins)):
-                raise ValueError('Both zbinEdges, and'
-                                 '(zlower, zhigher, numBins) cannot be None')
-            if self.zlower >= self.zhigher:
-                raise ValueError('zlower must be less than zhigher')
-            self._zbinEdges = np.linspace(self.zlower, self.zhigher, self.numBins + 1)
-        return self._zbinEdges
+    def zbin_edges(self):
+        return self._zbin_edges
 
-    def snRate(self, z):
+    def volumetric_rate(self, z):
         """
-        The rate of SN at a redshift z in units of number of SN/ comoving
-        volume in Mpc^3/yr in earth years according to the commonly used
+        The volumetric rate at a redshift z in units of number of TDOs/ comoving
+        volume in Mpc^3/yr in rest frame years according to the commonly used
         power-law expression 
 
         .. math:: rate(z) = \alpha (h/0.7)^3 (1.0 + z)^\beta
@@ -129,81 +178,78 @@ class PowerLawRates(BaseRateDistributions):
         Examples
         --------
         """
-        res = self.alpha * (1.0 + z)**self.beta 
-        res *= ((self.cosmo.h / 0.7) **3.)  
+        res = self.alpha_rate * (1.0 + z)**self.beta_rate
+        res *= ((self.cosmology.h / 0.7) **3.)
         return res
 
-    def zSampleSize(self): 
-        #, zbinEdges=self.zbinEdges, DeltaT=self.DeltaT,
-        #            skyFraction=self.skyFraction,
-        #            zlower=None, zhigher=None, numBins=None):
-        """
-        Parameters
-        ----------
-        zbinEdges : `nunpy.ndarray` of edges of zbins, defaults to None
-            Should be of the form np.array([z0, z1, z2]) which will have
-            zbins (z0, z1) and (z1, z2)
-        skyFraction : np.float, optional, 
-        fieldArea : optional, units of degrees squared
-            area of sky considered.
-        zlower : float, optional, defaults to None
-            lower edge of z range
-        zhigher : float, optional, defaults to None
-            higher edge of z range
-        numBins : int, optional, defaults to None
-           if not None, overrides zbinEdges
-        """
-        DeltaT = self.DeltaT
-        skyFraction = self.skyFraction
-        zbinEdges = self.zbinEdges
-        z_mids = 0.5 * (zbinEdges[1:] + zbinEdges[:-1])
-        snpervolume = self.snRate(z_mids) 
+    @staticmethod
+    def volume_in_zshell(zbin_edges, cosmo, skyfrac):
+        """returns the comoving volume for the redshift shells
+        specified by `zbin_edges` for the cosmology `cosmo`
+        and sky fraction `skyfrac`
 
+        Paramters
+        ---------
+        zbin_edges : `np.ndarray` of floats
+            edges of the redshift bins/shells.
+        cosmo : `astropy.cosmology.cosmology` instance
+            cosmology for which the comoving volumes will be
+            calculated.
+        skyfrac : `np.float`
+            The sky fraction (area / total sky area) covered by
+            this sample.
+        """
         # Comoving volume of the univere in between zlower and zhigher
-        vols = self.cosmo.comoving_volume(zbinEdges)
+        vols = cosmo.comoving_volume(zbin_edges)
 
         # Comoving volume in each bin
-        vol = vols[1:] - vols[:-1]
-        vol *= skyFraction
-        
-        numSN = vol * snpervolume * DeltaT / (1.0 + z_mids)
-        return numSN.value
+        vol = np.diff(vols)
+        vol *= skyfrac
 
-    def numSN(self):
-        """
-        Return the number of expected supernovae in time DeltaT, with a rate snrate
-        in a redshift range zlower, zhigher divided into numBins equal redshift
-        bins. The variation of the rate within a bin is ignored.
-    
-        Parameters
-        ----------
-        zlower : mandatory, float
-            lower limit on redshift range
-        zhigher : mandatory, float
-            upper limit on redshift range
-        numBins : mandatory, integer
-            number of bins
-        cosmo : `astropy.cosmology` instance, mandatory
-            cosmological parameters
-        fieldArea : mandatory, units of radian square
-            sky area considered
-        """
-        if self._numSN is None:
-            lam = self.zSampleSize()
-            self._numSN = self.randomState.poisson(lam=lam)
-        return self._numSN
+        return vol
+ 
+    @property
+    def z_sample_sizes(self):
+        """Number of TDO in each redshift bin with the bins being
+        defined by the class parameters
 
+
+        Returns
+        -------
+        num_in_volshells : `np.ndaray` of floats
+            Expected number of objects in volume shells
+            defined by the redshift bin edges.
+        """
+        DeltaT = self.DeltaT
+        skyFraction = self.sky_fraction
+        zbinEdges = self.zbin_edges
+        z_mids = 0.5 * (zbinEdges[1:] + zbinEdges[:-1])
+
+        vol = self.volume_in_zshell(zbinEdges, self.cosmology,
+                                    self.sky_fraction)
+
+        num_in_vol_shells = vol * self.volumetric_rate(z_mids)
+        num_in_vol_shells *= DeltaT / (1.0 + z_mids)
+        return num_in_vol_shells.value
 
     @property
-    def zSamples(self):
-        # Calculate only once
-        if self._zSamples is None:
-            numSN = self.numSN()
-            zbinEdges =  self.zbinEdges
+    def num_sources_realized(self):
+        """The number of TDO sources realized in each redshift bin set
+        through a Poisson sampling of the expected number of sources.
+        """
+        if self._num_sources is None:
+            self._num_sources = self.randomState.poisson(lam=self.z_sample_sizes)
+        return self._num_sources
+
+    @property
+    def z_samples(self):
+        if self._zsamples is None:
+            zbinEdges =  self.zbin_edges
+            num_sources = self.num_sources_realized
             x = zbinEdges[:-1]
             y = zbinEdges[1:]
             arr = (self.randomState.uniform(low=xx, high=yy, size=zz).tolist()
-                                           for (xx, yy, zz) in zip(x,y, numSN))
-            self._zSamples = np.asarray(list(__x for __lst in arr
-                                             for __x in __lst))
-        return self._zSamples
+                                           for (xx, yy, zz) in zip(x,y, num_sources))
+            self._zsamples = np.asarray(list(_x for _lst in arr
+                                             for _x in _lst))
+        return self._zsamples
