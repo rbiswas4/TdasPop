@@ -3,7 +3,7 @@ import os
 import pytest
 import numpy as np
 
-from varpop import PowerLawRates
+from tdaspop import PowerLawRates
 
 def test_construction():
     rng = np.random.RandomState(1)

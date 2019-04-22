@@ -3,7 +3,7 @@ import sys
 import os
 import re
 
-PACKAGENAME = 'varpop'
+PACKAGENAME = 'tdaspop'
 packageDir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           PACKAGENAME)
 
@@ -30,7 +30,7 @@ setup(# package information
       long_description=''' ''',
       # What code to include as packages
       packages=[PACKAGENAME],
-      packagedir={PACKAGENAME: 'varpop'},
+      packagedir={PACKAGENAME: 'tdaspop'},
       # What data to include as packages
       include_package_data=True,
       package_data={PACKAGENAME:['example_data/*.dat']}
