@@ -8,6 +8,10 @@ __all__ = ['SersicSamples']
 class SersicSamples(object):
     """
     Class for sampling sersic profiles in CatSim
+
+    Parameters
+    ----------
+    rng : instance of `numpy.random.RandomState`
     """
     def __init__(self, rng):
         """
