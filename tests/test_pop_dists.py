@@ -3,7 +3,7 @@ import os
 import pytest
 import numpy as np
 
-from tdaspop import double_gaussian
+from tdaspop import double_gaussian, double_gaussian_pdf
 
 def test_running_dg():
     rng = np.random.RandomState(1)
@@ -26,3 +26,25 @@ def test_limiting_case():
     assert np.abs(samps[samps < 0.].size/samps.size - 0.1) < 0.05
     samps = double_gaussian(20., 1., 9., size=1000000, rng=rng)
     assert np.abs(samps[samps < 20.].size/samps.size - 0.1) < 0.05
+
+def test_double_gaussian_pdf_integral():
+
+    # Hard coded Double Gaussian
+    mode = 20.
+    sigmam = 1.
+    sigmap = 8.
+
+    # Do integral to mode by MC
+    num_points = 2 * 1000000
+    min_val = -1000. 
+    max_val = 1000
+
+    x = np.linspace(min_val, mode, num_points) 
+    intl = (mode - min_val) * np.sum(double_gaussian_pdf(x, mode=mode, sigmam=sigmam,
+        sigmap=sigmap))/num_points 
+    x = np.linspace(mode, max_val, num_points) 
+    inth = (max_val - mode) * np.sum(double_gaussian_pdf(x, mode=mode, sigmam=sigmam,
+        sigmap=sigmap))/num_points 
+
+    np.testing.assert_almost_equal(inth + intl, 1, decimal=3)
+    np.testing.assert_almost_equal(inth/intl, 8., decimal=3)
