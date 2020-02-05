@@ -1,4 +1,5 @@
 """
+Concrete implementations of rate distributions
 """
 from __future__ import absolute_import, print_function, division
 __all__ = ['PowerLawRates']
@@ -9,9 +10,17 @@ from . import BaseRateDistributions
 
 class PowerLawRates(BaseRateDistributions):
     """
-    Concrete implementation of `RateDistributions` providing rates and TDO
+    Concrete implementation of `RateDistributions` providing rates and TDAs
     numbers and samples as a function of redshift when the volumetric rate can
-    be expressed as a power law in redshift. This is instantiated by the following
+    be expressed as a power law in redshift. 
+    
+    rv(z) = alpha * ( 1 + z ) ** beta
+
+
+    alpha is assumed to be provided in units of numbers/rest frame year/ comoving Mpc^3
+    * (h/0.7)**3
+
+    This is instantiated by the following
     parameters and has the attributes and methods listed
 
 
@@ -21,7 +30,8 @@ class PowerLawRates(BaseRateDistributions):
         random state needed for generation
     cosmo : `astropy.cosmology` instance, defaults to Planck15
         Cosmology used in the calculation of volumes etc. 
-    alpha_rate :`np.float` defaults to 2.6e-5
+    alpha_rate :`np.float` defaults to 2.6e-5 /yr/Mpc^3 (h/0.7)**3
+        rate of supernovae 
     beta_rate : `np.float` defaults to 1.5
     zbin_edges : sequence of floats, defaults to `None`
         Available method of having non-uniform redshift bins by specifying
@@ -59,7 +69,7 @@ class PowerLawRates(BaseRateDistributions):
     ----------
     - rate: The variable rate is a single power law with numerical
         coefficients (alpha, beta)  passed into the instantiation. The rate is
-        the number of variables at redshift z per comoving volume per unit
+        the number of TDAs at redshift z per comoving volume per unit
         observer time over the entire sky expressed in units of 
         numbers/Mpc^3/year 
     - A binning in redshift is used to perform the calculation of the expected
@@ -94,7 +104,8 @@ class PowerLawRates(BaseRateDistributions):
         """
         self._rng = rng
         self._cosmo = cosmo
-        self.alpha_rate = alpha_rate
+        self._input_alpha_rate = alpha_rate
+        self.alpha_rate = alpha_rate * (cosmo.h/0.7)**3 
         self.beta_rate = beta_rate
         self.DeltaT = survey_duration
         self._zsamples = None
@@ -179,7 +190,8 @@ class PowerLawRates(BaseRateDistributions):
         --------
         """
         res = self.alpha_rate * (1.0 + z)**self.beta_rate
-        res *= ((self.cosmology.h / 0.7) **3.)
+        # remove rate
+        # res *= ((self.cosmology.h / 0.7) **3.)
         return res
 
     @staticmethod
