@@ -4,6 +4,7 @@ from .version import __VERSION__ as __version__
 from .population_params_absracts import *
 from .rateDistributions import *
 from .pop_dists import *
+from .sampling import *
 
 
 here = __file__
