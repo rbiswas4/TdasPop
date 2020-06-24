@@ -1,15 +1,16 @@
 from __future__ import absolute_import, print_function, division
+
 """
 A module with the abstract classes for implementing populaions of variables and
 transients.
 """
-__all__ = ['BaseRateDistributions', 'BasePopulation',
-           'BaseSpatialPopulation']
+__all__ = ["BaseRateDistributions", "BasePopulation", "BaseSpatialPopulation"]
 
 from future.utils import with_metaclass
 import abc
 import numpy as np
 from collections import OrderedDict
+
 
 class BasePopulation(with_metaclass(abc.ABCMeta, object)):
     """
@@ -26,6 +27,7 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
 
     .. note : this is a general enough class to deal with any population. 
     """
+
     @abc.abstractproperty
     def mjdmin(self):
         pass
@@ -37,7 +39,7 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractproperty
     def paramsTable(self):
         pass
-    
+
     def modelParams(self, idx):
         """
         Ordered dictionary of model parameter names and parameters for the
@@ -46,7 +48,6 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
         """
 
         return OrderedDict(self.paramsTable.loc[idx])
-        
 
     @abc.abstractproperty
     def idxvalues(self):
@@ -80,6 +81,7 @@ class BaseSpatialPopulation(with_metaclass(abc.ABCMeta, BasePopulation)):
     """
     A population class that has positions associated with each object
     """
+
     @abc.abstractmethod
     def positions(self, idx):
         pass
@@ -110,6 +112,7 @@ class BaseRateDistributions(with_metaclass(abc.ABCMeta, object)):
     the cosmology. Finally, the area of the sky is also encoded in
     skyFraction.
     """
+
     @abc.abstractproperty
     def randomState(self):
         """
@@ -135,6 +138,7 @@ class BaseRateDistributions(with_metaclass(abc.ABCMeta, object)):
         pass
 
     abc.abstractproperty
+
     def sky_area(self):
         """ The area of the sky in sq degrees over which the sample is studies"""
 
@@ -147,7 +151,6 @@ class BaseRateDistributions(with_metaclass(abc.ABCMeta, object)):
         perfectly fine to get 3.45 TODs in a redshift bin.
         """
         pass
-
 
     @abc.abstractproperty
     def num_sources_realized(self):
