@@ -2,7 +2,8 @@
 Concrete implementations of rate distributions
 """
 from __future__ import absolute_import, print_function, division
-__all__ = ['PowerLawRates']
+
+__all__ = ["PowerLawRates"]
 import numpy as np
 from astropy.cosmology import Planck15
 from . import BaseRateDistributions
@@ -87,25 +88,28 @@ class PowerLawRates(BaseRateDistributions):
         This number must be integral.
 
     """
-    def __init__(self,
-                 rng,
-                 cosmo=Planck15,
-                 alpha_rate=2.6e-5,
-                 beta_rate=1.5,
-                 zbin_edges=None,
-                 zlower=1.0e-8,
-                 zhigher=1.4,
-                 num_bins=20,
-                 survey_duration=10.,
-                 sky_area=10.0, # Unit of degree square
-                 sky_fraction=None):
+
+    def __init__(
+        self,
+        rng,
+        cosmo=Planck15,
+        alpha_rate=2.6e-5,
+        beta_rate=1.5,
+        zbin_edges=None,
+        zlower=1.0e-8,
+        zhigher=1.4,
+        num_bins=20,
+        survey_duration=10.0,
+        sky_area=10.0,  # Unit of degree square
+        sky_fraction=None,
+    ):
         """
         Basic constructor for class. Parameters are in the class definition.
         """
         self._rng = rng
         self._cosmo = cosmo
         self._input_alpha_rate = alpha_rate
-        self.alpha_rate = alpha_rate * (cosmo.h/0.7)**3 
+        self.alpha_rate = alpha_rate * (cosmo.h / 0.7) ** 3
         self.beta_rate = beta_rate
         self.DeltaT = survey_duration
         self._zsamples = None
@@ -121,7 +125,7 @@ class PowerLawRates(BaseRateDistributions):
     @property
     def randomState(self):
         if self._rng is None:
-            raise ValueError('rng must be provided')
+            raise ValueError("rng must be provided")
         return self._rng
 
     @property
@@ -132,15 +136,19 @@ class PowerLawRates(BaseRateDistributions):
         """
         Private helper function to handle the sky_area and sky_fraction
         """
-        assert not bool(sky_fraction and sky_area), "Both `sky_fraction` and `sky_area` cannot be specified" 
-        assert bool(sky_fraction or sky_area), "At least one of `sky_fraction` and `sky_area` have to be specified"
+        assert not bool(
+            sky_fraction and sky_area
+        ), "Both `sky_fraction` and `sky_area` cannot be specified"
+        assert bool(
+            sky_fraction or sky_area
+        ), "At least one of `sky_fraction` and `sky_area` have to be specified"
         if sky_fraction is None:
             self._sky_area = sky_area
-            self._sky_fraction = self.sky_area * np.radians(1.)**2.0  / 4.0 / np.pi
+            self._sky_fraction = self.sky_area * np.radians(1.0) ** 2.0 / 4.0 / np.pi
 
         if sky_area is None:
-            self._sky_fraction = sky_fraction 
-            self._sky_area = self.sky_fraction / (np.radians(1.)**2.0  / 4.0 / np.pi)
+            self._sky_fraction = sky_fraction
+            self._sky_area = self.sky_fraction / (np.radians(1.0) ** 2.0 / 4.0 / np.pi)
 
         return None
 
@@ -162,7 +170,7 @@ class PowerLawRates(BaseRateDistributions):
             zbin_edges = np.linspace(zlower, zhigher, num_bins)
 
         assert len(zbin_edges) > 0
-        
+
         self.zlower = zbin_edges.min()
         self.zhigher = zbin_edges.max()
         self.num_bins = len(zbin_edges) - 1
@@ -189,7 +197,7 @@ class PowerLawRates(BaseRateDistributions):
         Examples
         --------
         """
-        res = self.alpha_rate * (1.0 + z)**self.beta_rate
+        res = self.alpha_rate * (1.0 + z) ** self.beta_rate
         # remove rate
         # res *= ((self.cosmology.h / 0.7) **3.)
         return res
@@ -219,7 +227,7 @@ class PowerLawRates(BaseRateDistributions):
         vol *= skyfrac
 
         return vol
- 
+
     @property
     def z_sample_sizes(self):
         """Number of TDO in each redshift bin with the bins being
@@ -237,8 +245,7 @@ class PowerLawRates(BaseRateDistributions):
         zbinEdges = self.zbin_edges
         z_mids = 0.5 * (zbinEdges[1:] + zbinEdges[:-1])
 
-        vol = self.volume_in_zshell(zbinEdges, self.cosmology,
-                                    self.sky_fraction)
+        vol = self.volume_in_zshell(zbinEdges, self.cosmology, self.sky_fraction)
 
         num_in_vol_shells = vol * self.volumetric_rate(z_mids)
         num_in_vol_shells *= DeltaT / (1.0 + z_mids)
@@ -256,12 +263,13 @@ class PowerLawRates(BaseRateDistributions):
     @property
     def z_samples(self):
         if self._zsamples is None:
-            zbinEdges =  self.zbin_edges
+            zbinEdges = self.zbin_edges
             num_sources = self.num_sources_realized
             x = zbinEdges[:-1]
             y = zbinEdges[1:]
-            arr = (self.randomState.uniform(low=xx, high=yy, size=zz).tolist()
-                                           for (xx, yy, zz) in zip(x,y, num_sources))
-            self._zsamples = np.asarray(list(_x for _lst in arr
-                                             for _x in _lst))
+            arr = (
+                self.randomState.uniform(low=xx, high=yy, size=zz).tolist()
+                for (xx, yy, zz) in zip(x, y, num_sources)
+            )
+            self._zsamples = np.asarray(list(_x for _lst in arr for _x in _lst))
         return self._zsamples
