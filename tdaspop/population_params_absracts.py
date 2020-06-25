@@ -70,11 +70,6 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
         """
         pass
 
-    @abc.abstractproperty
-    def pdf(self):
-        """
-        """
-        pass
 
     @abc.abstractproperty
     def logpdf(self):
