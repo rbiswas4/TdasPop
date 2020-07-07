@@ -1,7 +1,7 @@
 """
 Distributions often needed for sampling populations 
 """
-__all__ = ['double_gaussian', 'double_gaussian_pdf']
+__all__ = ['double_gaussian', 'double_gaussian_pdf', 'double_gaussian_logpdf']
 
 import numpy as np
 from scipy.stats import norm
@@ -64,3 +64,27 @@ def double_gaussian_pdf(x, mode, sigmam, sigmap):
 
     return pdf
 
+def double_gaussian_logpdf(x, mode, sigmam, sigmap):
+    """
+    Return the log pdf of the double gaussian
+
+    Parameters
+    ----------
+    x : `np.ndarray` of floats 
+    mode : float
+        mode of the distribution
+    sigmam : float
+        standard deviation of lower side
+    sigmap : float
+        standard deviation of higher side
+    """
+    A = 2.0 / (sigmam + sigmap)
+    logA = np.log(A)
+
+    mask = x > mode
+
+    logpdf = np.log(sigmam) +   norm.logpdf(x, mode, sigmam) 
+    logpdf[mask] = np.log(sigmap) +   norm.logpdf(x[mask], mode, sigmap) 
+    logpdf += A
+
+    return logpdf
