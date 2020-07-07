@@ -3,7 +3,7 @@ import os
 import pytest
 import numpy as np
 
-from tdaspop import double_gaussian, double_gaussian_pdf
+from tdaspop import double_gaussian, double_gaussian_pdf, double_gaussian_logpdf
 
 def test_running_dg():
     rng = np.random.RandomState(1)
@@ -26,6 +26,23 @@ def test_limiting_case():
     assert np.abs(samps[samps < 0.].size/samps.size - 0.1) < 0.05
     samps = double_gaussian(20., 1., 9., size=1000000, rng=rng)
     assert np.abs(samps[samps < 20.].size/samps.size - 0.1) < 0.05
+
+def test_double_gaussian_logpdf():
+
+    # Hard coded Double Gaussian
+    mode = 20.
+    sigmam = 1.
+    sigmap = 8.
+
+    # Evauate the pdf at a set of poits
+    # points -> x
+    num_points = 2 * 1000000
+    min_val = -1000. 
+    max_val = 1000
+    x = np.linspace(min_val, max_val, num_points) 
+    pdf = double_gaussian_pdf(x, mode=mode, sigmam=sigmam, sigmap=sigmap)
+    logpdf = double_gaussian_logpdf(x, mode=mode, sigmam=sigmam, sigmap=sigmap)
+    np.testing.assert_allclose(pdf, np.exp(logpdf), rtol=5)
 
 def test_double_gaussian_pdf_integral():
 
