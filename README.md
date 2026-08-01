@@ -20,4 +20,12 @@ A very simple example based on a a light curve being sinosoidal, devoid of astro
 
 A couple of implementations of more realistic, astrophysical distributions are shown Supernovae Type Ia, modeled using the well known SALT model are setup in the [SNPop](https://github.com/rbiswas4/SNPop) repository. These population models `SimpleSALTPopulation` and `GMM_SALTPopulation`, coded up within the `snpop` package inherit from `varpop` populations and the code can be seen in a package [module](https://github.com/rbiswas4/SNPop/blob/master/snpop/saltpop.py), and their basic functionality is demonstrated as JuPyteR notebooks [here](https://github.com/rbiswas4/SNPop/blob/master/Examples/Demo_Gmm.ipynb) and [here](https://github.com/rbiswas4/SNPop/blob/master/Examples/Demo_SimpleSALTPopulation.ipynb). 
 
+## Releasing
+
+Versioning is managed with [bump-my-version](https://github.com/callowayproject/bump-my-version) (`pip install bump-my-version`, or already included in `install/pip-requirements.txt`). To cut a release, bump `tdaspop/version.py` and tag the commit with one command:
+```
+bump-my-version bump patch   # or minor / major
+```
+This updates `tdaspop/version.py`, commits the change, and creates a matching `vX.Y.Z` git tag.
+
 
