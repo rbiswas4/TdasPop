@@ -8,7 +8,7 @@ from scipy.stats import norm
 
 
 def double_gaussian(mode, sigmam, sigmap, size=1000,
-                    rng=np.random.RandomState(1)):
+                    rng=None):
     """Draw samples from a double gaussian distribution
 
 
@@ -22,7 +22,8 @@ def double_gaussian(mode, sigmam, sigmap, size=1000,
 	standard deviation of the distribution
     size: int
 	number of samples required
-    rng: instance `np.random.RandomState`, defaults to state with seed 1.
+    rng: instance `np.random.RandomState`, defaults to `None`
+	if `None`, a new `np.random.RandomState` with seed 1 is used.
 
     Returns
     -------
@@ -33,6 +34,9 @@ def double_gaussian(mode, sigmam, sigmap, size=1000,
     -----
     This code is essentially the same as code contributed by D. Rubin for SN.
     """
+    if rng is None:
+        rng = np.random.RandomState(1)
+
     # Stick to a convention sigmam is a +ve number
     sigs = np.abs([sigmam, sigmap])
     probs = sigs/sigs.sum()
@@ -46,7 +50,7 @@ def double_gaussian_pdf(x, mode, sigmam, sigmap):
 
     Parameters
     ----------
-    x : `np.ndarray` of floats 
+    x : scalar or `np.ndarray` of floats
     mode : float
         mode of the distribution
     sigmam : float
@@ -54,15 +58,19 @@ def double_gaussian_pdf(x, mode, sigmam, sigmap):
     sigmap : float
         standard deviation of higher side
     """
+    x = np.asarray(x, dtype=float)
+    scalar_input = x.ndim == 0
+    x = np.atleast_1d(x)
+
     A = 2.0 / (sigmam + sigmap)
 
     mask = x > mode
 
-    pdf = sigmam * norm.pdf(x, mode, sigmam) 
-    pdf[mask] = sigmap * norm.pdf(x[mask], mode, sigmap) 
+    pdf = sigmam * norm.pdf(x, mode, sigmam)
+    pdf[mask] = sigmap * norm.pdf(x[mask], mode, sigmap)
     pdf *= A
 
-    return pdf
+    return pdf[0] if scalar_input else pdf
 
 def double_gaussian_logpdf(x, mode, sigmam, sigmap):
     """
@@ -70,7 +78,7 @@ def double_gaussian_logpdf(x, mode, sigmam, sigmap):
 
     Parameters
     ----------
-    x : `np.ndarray` of floats 
+    x : scalar or `np.ndarray` of floats
     mode : float
         mode of the distribution
     sigmam : float
@@ -78,13 +86,17 @@ def double_gaussian_logpdf(x, mode, sigmam, sigmap):
     sigmap : float
         standard deviation of higher side
     """
+    x = np.asarray(x, dtype=float)
+    scalar_input = x.ndim == 0
+    x = np.atleast_1d(x)
+
     A = 2.0 / (sigmam + sigmap)
     logA = np.log(A)
 
     mask = x > mode
 
-    logpdf = np.log(sigmam) +   norm.logpdf(x, mode, sigmam) 
-    logpdf[mask] = np.log(sigmap) +   norm.logpdf(x[mask], mode, sigmap) 
-    logpdf += A
+    logpdf = np.log(sigmam) +   norm.logpdf(x, mode, sigmam)
+    logpdf[mask] = np.log(sigmap) +   norm.logpdf(x[mask], mode, sigmap)
+    logpdf += logA
 
-    return logpdf
+    return logpdf[0] if scalar_input else logpdf

@@ -48,14 +48,14 @@ class Sample1D(object):
         """
         return np.interp(cdf, self.cdf, self.xvals)
 
-    def sample_pdf(self, rng=np.random.RandomState(0), size=100):
+    def sample_pdf(self, rng=None, size=100):
         """
         Samples drawn from the pdf  with a random state of requested size
 
         Parameters
         ----------
-        rng : `np.random.RandomState` instance, defaults to `RandomState(0)`
-            random state 
+        rng : `np.random.RandomState` instance, defaults to `None`
+            if `None`, a new `np.random.RandomState` with seed 0 is used.
         size : int, defaults to 100
             number of samples requested
 
@@ -64,6 +64,8 @@ class Sample1D(object):
         vals : `np.ndarray`
             numpy array containing samples
         """
+        if rng is None:
+            rng = np.random.RandomState(0)
         cdf_sample = rng.uniform(size=size)
         vals = self.x_from_cdf(cdf_sample)
         return vals
