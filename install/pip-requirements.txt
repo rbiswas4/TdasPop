@@ -9,3 +9,4 @@ python-coveralls
 coverage
 matplotlib
 bump-my-version
+pre-commit

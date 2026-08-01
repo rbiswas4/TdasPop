@@ -28,4 +28,12 @@ bump-my-version bump patch   # or minor / major
 ```
 This updates `tdaspop/version.py`, commits the change, and creates a matching `vX.Y.Z` git tag.
 
+## Code style
+
+Code is formatted with [Black](https://github.com/psf/black), enforced via [pre-commit](https://pre-commit.com/) (`pip install pre-commit`, or already included in `install/pip-requirements.txt`). To enable it locally, run once per clone:
+```
+pre-commit install
+```
+This reformats changed files with Black on every commit.
+
 
