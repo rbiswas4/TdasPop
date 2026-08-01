@@ -1,6 +1,7 @@
 numpy
 scipy
 scikit-learn
+astropy
 pytest
 future
 pytest-cov
