@@ -39,10 +39,30 @@ def test_double_gaussian_logpdf():
     num_points = 2 * 1000000
     min_val = -1000. 
     max_val = 1000
-    x = np.linspace(min_val, max_val, num_points) 
+    x = np.linspace(min_val, max_val, num_points)
     pdf = double_gaussian_pdf(x, mode=mode, sigmam=sigmam, sigmap=sigmap)
     logpdf = double_gaussian_logpdf(x, mode=mode, sigmam=sigmam, sigmap=sigmap)
-    np.testing.assert_allclose(pdf, np.exp(logpdf), rtol=5)
+    np.testing.assert_allclose(pdf, np.exp(logpdf), rtol=1e-6, atol=1e-300)
+
+def test_double_gaussian_scalar_input():
+
+    mode = 20.
+    sigmam = 1.
+    sigmap = 8.
+
+    for x in (19.5, 20.5):
+        pdf = double_gaussian_pdf(x, mode=mode, sigmam=sigmam, sigmap=sigmap)
+        logpdf = double_gaussian_logpdf(x, mode=mode, sigmam=sigmam, sigmap=sigmap)
+        assert np.isscalar(pdf) or pdf.ndim == 0
+        np.testing.assert_allclose(pdf, np.exp(logpdf), rtol=1e-6)
+
+def test_double_gaussian_default_rng_reproducible():
+    # Repeated calls without an explicit `rng` should be reproducible,
+    # each drawing from a fresh `RandomState(1)` rather than sharing state
+    # across calls.
+    samps1 = double_gaussian(1., 1., 2., size=100)
+    samps2 = double_gaussian(1., 1., 2., size=100)
+    np.testing.assert_array_equal(samps1, samps2)
 
 def test_double_gaussian_pdf_integral():
 
