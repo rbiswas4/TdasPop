@@ -54,5 +54,5 @@ def test_limiting_case_easy():
                        cosmo=cosmo,
                        beta_rate=1.0)
 
-    vol =  cosmo.comoving_volume(z=1.2).value
+    vol =  cosmo.comoving_volume(1.2).value
     np.testing.assert_allclose(vol * 3.0e-5 * (cosmo.h/0.7)**3, pl.z_sample_sizes.sum(), rtol=0.001) 
