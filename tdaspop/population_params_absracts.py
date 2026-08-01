@@ -139,10 +139,10 @@ class BaseRateDistributions(with_metaclass(abc.ABCMeta, object)):
         """
         pass
 
-    abc.abstractproperty
-
+    @abc.abstractproperty
     def sky_area(self):
         """ The area of the sky in sq degrees over which the sample is studies"""
+        pass
 
     @abc.abstractproperty
     def z_sample_sizes(self):
