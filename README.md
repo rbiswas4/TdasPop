@@ -1,6 +1,6 @@
 # Time Domain Astronomy Sources Populations
 
-[![Build Status](https://travis-ci.org/rbiswas4/TdasPop.svg?branch=master)](https://travis-ci.org/rbiswas4/TdasPop)[![PyPI version](https://badge.fury.io/py/tdaspop.svg)](https://badge.fury.io/py/tdaspop)
+[![tests](https://github.com/rbiswas4/TdasPop/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/rbiswas4/TdasPop/actions/workflows/tests.yml)[![PyPI version](https://badge.fury.io/py/tdaspop.svg)](https://badge.fury.io/py/tdaspop)
 
 A base repository to provide common infrastructure in describing populations of Time Domain Astronomy Sources (astrophysical objects with luminosities varying over time scales to be detected as changing by LSST) of different classes, sampling those populations and validating the distributions.
 
@@ -27,5 +27,13 @@ Versioning is managed with [bump-my-version](https://github.com/callowayproject/
 bump-my-version bump patch   # or minor / major
 ```
 This updates `tdaspop/version.py`, commits the change, and creates a matching `vX.Y.Z` git tag.
+
+## Code style
+
+Code is formatted with [Black](https://github.com/psf/black), enforced via [pre-commit](https://pre-commit.com/) (`pip install pre-commit`, or already included in `install/pip-requirements.txt`). To enable it locally, run once per clone:
+```
+pre-commit install
+```
+This reformats changed files with Black on every commit.
 
 
