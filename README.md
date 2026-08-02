@@ -28,6 +28,18 @@ bump-my-version bump patch   # or minor / major
 ```
 This updates `tdaspop/version.py`, commits the change, and creates a matching `vX.Y.Z` git tag.
 
+## Documentation
+
+API docs are built with [Sphinx](https://www.sphinx-doc.org/) from the docstrings in `tdaspop/` (numpy-style, parsed via `sphinx.ext.napoleon`), configured for [Read the Docs](https://readthedocs.org/) via `.readthedocs.yaml`. To build locally:
+```
+pip install -r docs/requirements.txt
+pip install -e .
+sphinx-build -b html docs docs/_build/html
+```
+then open `docs/_build/html/index.html`. A `docs` GitHub Actions workflow builds the docs (with warnings treated as errors) on every push and PR as a sanity check.
+
+To actually host these on readthedocs.org, the repo needs to be imported there once (Import a Project -> select `rbiswas4/TdasPop`) by an account owner -- that step can't be done from here.
+
 ## Code style
 
 Code is formatted with [Black](https://github.com/psf/black), enforced via [pre-commit](https://pre-commit.com/) (`pip install pre-commit`, or already included in `install/pip-requirements.txt`). To enable it locally, run once per clone:
