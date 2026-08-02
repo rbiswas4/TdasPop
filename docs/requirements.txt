@@ -1,0 +1,7 @@
+sphinx
+sphinx-rtd-theme
+numpy
+scipy
+astropy
+scikit-learn
+future

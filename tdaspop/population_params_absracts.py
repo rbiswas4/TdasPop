@@ -19,13 +19,7 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
     population is specified by a unique index idx. The model parameters for an
     object (ie. index) is obtained as a dictionary using the method modelparams.
 
-    
-    Attributes
-    ----------
-    paramsTable : `pd.DataFrame`
-        a dataframe with parameters of the model index by a set of index values.
-
-    .. note : this is a general enough class to deal with any population. 
+    .. note:: this is a general enough class to deal with any population.
     """
 
     @abc.abstractproperty
@@ -38,6 +32,10 @@ class BasePopulation(with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractproperty
     def paramsTable(self):
+        """
+        `pd.DataFrame` with parameters of the model indexed by a set of
+        index values.
+        """
         pass
 
     def modelParams(self, idx):
