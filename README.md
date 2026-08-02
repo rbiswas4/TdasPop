@@ -1,6 +1,6 @@
 # Time Domain Astronomy Sources Populations
 
-[![tests](https://github.com/rbiswas4/TdasPop/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/rbiswas4/TdasPop/actions/workflows/tests.yml)[![PyPI version](https://badge.fury.io/py/tdaspop.svg)](https://badge.fury.io/py/tdaspop)
+[![tests](https://github.com/rbiswas4/TdasPop/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/rbiswas4/TdasPop/actions/workflows/tests.yml)[![PyPI version](https://badge.fury.io/py/tdaspop.svg)](https://badge.fury.io/py/tdaspop)
 
 A base repository to provide common infrastructure in describing populations of Time Domain Astronomy Sources (astrophysical objects with luminosities varying over time scales to be detected as changing by LSST) of different classes, sampling those populations and validating the distributions.
 
